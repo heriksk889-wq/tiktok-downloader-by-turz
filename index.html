@@ -1,0 +1,596 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>THURZ | TikTok Downloader</title>
+
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --blue: #4776ff;
+  --purple: #9b5cff;
+  --bg: #090b16;
+  --muted: #9299b5;
+}
+
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background:
+    radial-gradient(circle at 15% 15%, #24265b 0%, transparent 35%),
+    radial-gradient(circle at 85% 85%, #301b58 0%, transparent 35%),
+    var(--bg);
+  color: white;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+button, input { font-family: inherit; }
+
+.page {
+  display: none;
+  width: 100%;
+  max-width: 480px;
+  animation: fadeIn .5s ease;
+}
+
+.page.active { display: block; }
+
+.card {
+  background: rgba(18,21,40,.88);
+  border: 1px solid rgba(255,255,255,.09);
+  border-radius: 25px;
+  padding: 35px 25px;
+  text-align: center;
+  backdrop-filter: blur(20px);
+  box-shadow: 0 20px 70px rgba(0,0,0,.3);
+}
+
+.logo {
+  width: 70px;
+  height: 70px;
+  margin: 0 auto 22px;
+  border-radius: 21px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg,var(--blue),var(--purple));
+  box-shadow: 0 5px 30px rgba(111,92,255,.35);
+}
+
+/* TIKTOK LOGO */
+.tiktok-logo {
+  background: #080a12;
+  border: 1px solid rgba(255,255,255,.12);
+}
+
+.tiktok-logo svg {
+  width: 39px;
+  height: 39px;
+  fill: #ffffff;
+  filter: none;
+
+}
+
+h1 {
+  font-size: 1.8rem;
+  margin-bottom: 12px;
+  background: linear-gradient(100deg,#6395ff,#bd83ff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+p {
+  color: var(--muted);
+  font-size: .9rem;
+  line-height: 1.6;
+  margin-bottom: 25px;
+}
+
+button {
+  border: none;
+  cursor: pointer;
+  transition: .3s ease;
+}
+
+button:active { transform: scale(.97); }
+
+button:disabled {
+  opacity: .5;
+  cursor: not-allowed;
+}
+
+.main-btn {
+  padding: 15px 35px;
+  border-radius: 13px;
+  background: linear-gradient(110deg,var(--blue),var(--purple));
+  color: white;
+  font-size: .95rem;
+  font-weight: 700;
+  width: 100%;
+  box-shadow: 0 5px 20px rgba(106,91,255,.2);
+}
+
+.main-btn:hover {
+  box-shadow: 0 5px 30px rgba(106,91,255,.4);
+  filter: brightness(1.12);
+}
+
+.tabs {
+  display: flex;
+  gap: 10px;
+  margin: 25px 0 18px;
+}
+
+.tab {
+  flex: 1;
+  padding: 13px 8px;
+  border-radius: 12px;
+  color: var(--muted);
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.07);
+  font-weight: 600;
+  font-size: .85rem;
+}
+
+.tab.active {
+  color: white;
+  background: linear-gradient(110deg,var(--blue),var(--purple));
+  border-color: transparent;
+}
+
+input {
+  width: 100%;
+  padding: 16px;
+  border-radius: 12px;
+  background: rgba(0,0,0,.25);
+  border: 1px solid rgba(255,255,255,.1);
+  color: white;
+  outline: none;
+  font-size: .9rem;
+  margin-bottom: 12px;
+  transition: .3s;
+}
+
+input:focus {
+  border-color: var(--blue);
+  box-shadow: 0 0 15px rgba(71,118,255,.12);
+}
+
+input::placeholder { color: #777e99; }
+
+#status {
+  font-size: .85rem;
+  margin: 17px 0;
+  color: var(--muted);
+  min-height: 20px;
+}
+
+#status.error { color: #ff6685; }
+#status.success { color: #75e6b0; }
+
+.loader {
+  display: none;
+  padding: 25px 0;
+  animation: fadeIn .3s ease;
+}
+
+.loader.show { display: block; }
+
+.spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid rgba(255,255,255,.08);
+  border-top: 4px solid #6395ff;
+  border-right: 4px solid #a66aff;
+  border-radius: 50%;
+  margin: 0 auto 15px;
+  animation: spin .8s linear infinite;
+}
+
+.loader p {
+  margin: 0;
+  font-size: .85rem;
+}
+
+#result {
+  display: none;
+  margin-top: 20px;
+  animation: slideUp .4s ease;
+}
+
+#result.show { display: block; }
+
+.media-box {
+  background: rgba(0,0,0,.25);
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 16px;
+  padding: 12px;
+  margin-bottom: 15px;
+}
+
+.media-box video,
+.media-box audio {
+  width: 100%;
+  border-radius: 10px;
+}
+
+.media-title {
+  font-size: .85rem;
+  color: #c5c9df;
+  margin-bottom: 12px;
+  text-align: left;
+}
+
+.download-btn {
+  display: block;
+  padding: 15px;
+  border-radius: 12px;
+  text-decoration: none;
+  color: white;
+  font-size: .9rem;
+  font-weight: 700;
+  background: linear-gradient(110deg,var(--blue),var(--purple));
+  transition: .3s;
+}
+
+.download-btn:hover {
+  filter: brightness(1.15);
+  transform: translateY(-2px);
+}
+
+.back-btn {
+  background: rgba(255,255,255,.06);
+  color: #c4c9dd;
+  padding: 12px 22px;
+  border-radius: 10px;
+  margin-top: 22px;
+}
+
+.back-btn:hover {
+  background: rgba(255,255,255,.12);
+}
+
+.footer {
+  margin-top: 25px;
+  color: #606780;
+  font-size: .72rem;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(15px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media(max-width:400px) {
+  .card { padding: 30px 18px; }
+  h1 { font-size: 1.55rem; }
+}
+</style>
+</head>
+
+<body>
+
+<!-- INTRO PAGE -->
+<div class="page active" id="pageIntro">
+  <div class="card">
+
+    <div class="logo tiktok-logo">
+      <svg viewBox="0 0 448 512" aria-label="TikTok logo">
+        <path d="M448 209.9a210.1 210.1 0 0 1-122.8-39.2v178.7a162.6 162.6 0 1 1-140.1-161.3v90.1a74.6 74.6 0 1 0 52.2 71.2V0h88.1a121.2 121.2 0 0 0 1.9 22.2h.1a122.2 122.2 0 0 0 53.9 80.5 121.5 121.5 0 0 0 66.7 19.9z"/>
+      </svg>
+    </div>
+
+    <h1>Welcome</h1>
+    <h1>TikTok Downloader</h1>
+
+    <p>
+      Download high-quality videos and audio
+      quickly and easily.
+    </p>
+
+    <button class="main-btn" id="btnMasuk">
+      Get Started
+    </button>
+
+    <div class="footer">POWERED BY THURZ</div>
+  </div>
+</div>
+
+<!-- DOWNLOAD PAGE -->
+<div class="page" id="pageDownload">
+  <div class="card">
+
+    <h1>TikTok Downloader</h1>
+    <p>Choose your preferred download format.</p>
+
+    <div class="tabs">
+      <button class="tab active" id="tabVideo">
+        Video HD
+      </button>
+
+      <button class="tab" id="tabAudio">
+        Audio MP3
+      </button>
+    </div>
+
+    <input
+      type="text"
+      id="urlInput"
+      placeholder="Paste TikTok URL here..."
+      autocomplete="off"
+    >
+
+    <button class="main-btn" id="btnGas">
+      Process Media
+    </button>
+
+    <div id="status"></div>
+
+    <div class="loader" id="loader">
+      <div class="spinner"></div>
+      <p id="loadingText">Processing your media...</p>
+    </div>
+
+    <div id="result">
+
+      <div class="media-box">
+
+        <div class="media-title" id="mediaTitle">
+          Preview
+        </div>
+
+        <video
+          id="preview"
+          controls
+          playsinline
+          preload="metadata"
+          style="display:none">
+        </video>
+
+        <audio
+          id="audioPreview"
+          controls
+          preload="metadata"
+          style="display:none">
+        </audio>
+
+      </div>
+
+      <a
+        id="dlLink"
+        class="download-btn"
+        href="#"
+        target="_blank"
+        rel="noopener"
+      >
+        Download Media
+      </a>
+
+    </div>
+
+    <button class="back-btn" id="btnBack">
+      Back to Home
+    </button>
+
+    <div class="footer">THURZ DOWNLOADER V2.1</div>
+
+  </div>
+</div>
+
+<script>
+const API_BASE = 'https://tikwm.com/api/';
+let currentMode = 'video';
+
+const $ = id => document.getElementById(id);
+
+function masuk() {
+  $('pageIntro').classList.remove('active');
+  $('pageDownload').classList.add('active');
+}
+
+function kembali() {
+  $('pageDownload').classList.remove('active');
+  $('pageIntro').classList.add('active');
+  resetResult();
+}
+
+function setStatus(message, type = '') {
+  const status = $('status');
+  status.textContent = message;
+  status.className = type;
+}
+
+function resetResult() {
+  $('result').classList.remove('show');
+  $('loader').classList.remove('show');
+
+  $('preview').pause();
+  $('audioPreview').pause();
+
+  $('preview').removeAttribute('src');
+  $('audioPreview').removeAttribute('src');
+
+  $('preview').load();
+  $('audioPreview').load();
+
+  $('preview').style.display = 'none';
+  $('audioPreview').style.display = 'none';
+
+  $('dlLink').href = '#';
+
+  setStatus('');
+}
+
+function switchTab(mode) {
+  currentMode = mode;
+
+  $('tabVideo').classList.toggle('active', mode === 'video');
+  $('tabAudio').classList.toggle('active', mode === 'audio');
+
+  resetResult();
+}
+
+function setLoading(active) {
+  $('loader').classList.toggle('show', active);
+  $('btnGas').disabled = active;
+
+  if (active) {
+    $('loadingText').textContent =
+      currentMode === 'video'
+      ? 'Processing your video...'
+      : 'Processing your audio...';
+  }
+}
+
+async function gas() {
+  const url = $('urlInput').value.trim();
+
+  if (!url) {
+    setStatus('Please enter a TikTok URL.', 'error');
+    return;
+  }
+
+  let parsedUrl;
+
+  try {
+    parsedUrl = new URL(url);
+  } catch {
+    setStatus('Invalid URL. Please check your link.', 'error');
+    return;
+  }
+
+  const allowedHosts = [
+    'tiktok.com',
+    'www.tiktok.com',
+    'vm.tiktok.com',
+    'vt.tiktok.com',
+    'm.tiktok.com'
+  ];
+
+  if (!allowedHosts.includes(parsedUrl.hostname)) {
+    setStatus('Please enter a valid TikTok URL.', 'error');
+    return;
+  }
+
+  resetResult();
+  setLoading(true);
+
+  try {
+    const response = await fetch(
+      API_BASE + '?url=' + encodeURIComponent(url) + '&hd=1'
+    );
+
+    if (!response.ok) {
+      throw new Error('API server is unavailable.');
+    }
+
+    const json = await response.json();
+
+    if (json.code !== 0 || !json.data) {
+      throw new Error(
+        json.msg || 'Unable to process this media.'
+      );
+    }
+
+    const data = json.data;
+    const downloadLink = $('dlLink');
+
+    if (currentMode === 'video') {
+      const videoUrl = data.hdplay || data.play;
+
+      if (!videoUrl) {
+        throw new Error('Video URL not found.');
+      }
+
+      $('preview').src = videoUrl;
+      $('preview').style.display = 'block';
+      $('preview').load();
+
+      $('audioPreview').style.display = 'none';
+
+      $('mediaTitle').textContent = 'Video Preview';
+
+      downloadLink.href = videoUrl;
+      downloadLink.download =
+        'tiktok_' + (data.id || Date.now()) + '.mp4';
+
+      downloadLink.textContent = 'Download HD Video';
+
+    } else {
+      const audioUrl =
+        (data.music_info && data.music_info.play) ||
+        data.music;
+
+      if (!audioUrl) {
+        throw new Error('Audio URL not found.');
+      }
+
+      $('audioPreview').src = audioUrl;
+      $('audioPreview').style.display = 'block';
+      $('audioPreview').load();
+
+      $('preview').style.display = 'none';
+
+      $('mediaTitle').textContent =
+        (data.music_info && data.music_info.title) ||
+        'Audio Preview';
+
+      downloadLink.href = audioUrl;
+      downloadLink.download =
+        'tiktok_audio_' + (data.id || Date.now()) + '.mp3';
+
+      downloadLink.textContent = 'Download MP3 Audio';
+    }
+
+    $('result').classList.add('show');
+    setStatus('Successfully Processed', 'success');
+
+  } catch (error) {
+    console.error(error);
+    setStatus('Error: ' + error.message, 'error');
+
+  } finally {
+    setLoading(false);
+  }
+}
+
+$('btnMasuk').addEventListener('click', masuk);
+$('btnBack').addEventListener('click', kembali);
+$('btnGas').addEventListener('click', gas);
+
+$('tabVideo').addEventListener('click', () => {
+  switchTab('video');
+});
+
+$('tabAudio').addEventListener('click', () => {
+  switchTab('audio');
+});
+
+$('urlInput').addEventListener('keydown', event => {
+  if (event.key === 'Enter') gas();
+});
+
+console.log('THURZ DOWNLOADER V1.1 LOADED');
+</script>
+
+</body>
+</html>
